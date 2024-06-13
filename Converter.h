@@ -12,6 +12,8 @@
 #include <ranges>
 #include <algorithm>
 #include <cctype>
+#include <Windows.h>
+//#include "Sys/old_string.h"
 
 #pragma warning (disable : 26495)
 
@@ -71,7 +73,7 @@ private:
 
 /// Работа с текстом
 private:
-	void Parse(std::ifstream file);
+	void Parse(std::wifstream file);
 	/// Разбить полученную строку на вектор со словами
 	std::vector<std::string> SplitIntoWords(const std::string& text);
 
@@ -91,3 +93,5 @@ std::string quotesql(const std::string& s);
 std::string ReadLine(std::istream& input);
 
 bool ForEachFilesInDir(std::string path_to_directory);
+
+std::string GetStringFromWString(const std::wstring& wstr);

@@ -1,10 +1,13 @@
 ﻿#include "Converter.h"
 
+#include <locale>
+#include<codecvt>
+
 using namespace std::string_literals;
 
-Converter::Converter(const std::string& path) : m_dbPath(path), table_(10) {
+Converter::Converter(const std::string& path) : m_dbPath(path) {
 	if (std::filesystem::exists(std::filesystem::path{ m_dbPath })) {
-		Parse(std::ifstream{ m_dbPath });
+		Parse(std::wifstream{ m_dbPath });
 	}	
 	if (!table_.empty()) {
 		CreateDBfile();
@@ -100,21 +103,26 @@ bool Converter::FillDBFile()
 	return true;
 }
 
-void Converter::Parse(std::ifstream file)
+void Converter::Parse(std::wifstream file)
 {
+	setlocale(LC_ALL, "");
 	std::vector<std::string> words;
-	std::string line;
+	std::wstring line;
 	bool flag_type_column = true;
 	int count_comms = 0;
 	while (getline(file, line)) {
-		if (line[0] == 47 || line[0] == '*') {
+		if (line.find(47) != std::wstring::npos || line.find(L'*') != std::wstring::npos) {
+			++count_comms;
+			continue;
+		}
+		/*if (line.c_str()[0] == 47 || line.c_str()[0] == '*') {
 			++count_comms;
 			continue;
 			
-		}
-		if (count_comms < 2) continue;
-		if (count_comms == 2) {
-			words = SplitIntoWords(line);
+		}*/
+		if (count_comms <= 2) continue;
+		if (count_comms == 3) {
+			words = SplitIntoWords(GetStringFromWString(line));
 			table_.resize(words.size());
 			FoundDuplicate(words);
 			for (int i = 0; i < words.size(); ++i) {
@@ -122,8 +130,8 @@ void Converter::Parse(std::ifstream file)
 			}
 			continue;
 		}
-		words = SplitIntoWords(line);
-		if (count_comms == 3 && flag_type_column) {
+		words = SplitIntoWords(GetStringFromWString(line));
+		if (count_comms == 4 && flag_type_column) {
 			auto types = FoundTypeForCol(words);
 			for (int i = 0; i < types.size(); ++i) {
 				table_[i].type = types[i];
@@ -274,4 +282,15 @@ bool ForEachFilesInDir(std::string path_to_directory) {
 		}
 	}
 	return true;
+}
+
+std::string GetStringFromWString(const std::wstring& wstr)
+{
+	/*std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	return converter.to_bytes(wstr.c_str());*/
+	std::string Result;
+	int sz = WideCharToMultiByte(CP_ACP, 0, &wstr[0], (int)wstr.size(), 0, 0, 0, 0);
+	Result = std::string(sz, 0);
+	WideCharToMultiByte(CP_ACP, 0, &wstr[0], (int)wstr.size(), &Result[0], sz, 0, 0);
+	return Result;
 }
