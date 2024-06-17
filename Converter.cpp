@@ -70,6 +70,7 @@ bool Converter::FillDBFile()
 			Close();
 			return false;
 		}
+		query.clear();
 		for (int i = 0; i < table_[0].rows.size(); ++i) {
 			query += "INSERT INTO"s + quotesql(name_db) + "VALUES(" + std::to_string(i+1);
 			for (int j = 0; j < table_.size(); ++j) {
@@ -83,15 +84,16 @@ bool Converter::FillDBFile()
 				Close();
 				return false;
 			}
+			query.clear();
 		}
 
-		rc = sqlite3_exec(m_connection, query.c_str(), 0, 0, &messageError);
+		/*rc = sqlite3_exec(m_connection, query.c_str(), 0, 0, &messageError);
 		if (rc != SQLITE_OK) {
 			std::cerr << messageError << "\n";
 			sqlite3_free(messageError);
 			Close();
 			return false;
-		}
+		}*/
 
 
 	}
@@ -122,7 +124,6 @@ void Converter::ParseFromUtf8(const std::string& path) {
 	bool flag_type_column = true;
 	int count_comms = 0;
 	while (getline(file, line)) {
-		
 		if (line.c_str()[0] == 47 || line.c_str()[0] == '*') {
 			++count_comms;
 			continue;
@@ -156,8 +157,9 @@ void Converter::ParseFromUtf8(const std::string& path) {
 }
 
 void Converter::ParseFromUtf16(const std::string& path) {
-	std::wifstream file{ path, std::ios::binary };
-	setlocale(LC_ALL, "Russian");
+	std::wifstream file{ path, std::ios::in || std::ios::binary };
+	file.imbue(std::locale(file.getloc(),
+		new std::codecvt_utf16<wchar_t, 0x10ffff, std::codecvt_mode::little_endian>));
 	std::vector<std::string> words;
 	std::wstring line;
 	bool flag_type_column = true;
@@ -167,23 +169,26 @@ void Converter::ParseFromUtf16(const std::string& path) {
 			++count_comms;
 			continue;
 		}
-		/*if (line.c_str()[0] == 47 || line.c_str()[0] == '*') {
-			++count_comms;
-			continue;
-
-		}*/
 		if (count_comms <= 2) continue;
 		if (count_comms == 3) {
-			words = SplitIntoWords(GetStringFromWString(line));
+			for (auto word : SplitIntoWords(line)) {
+				words.push_back(GetStringFromWString(word));
+			}
 			table_.resize(words.size());
 			FoundDuplicate(words);
 			for (int i = 0; i < words.size(); ++i) {
 				table_[i].name = words[i];
 			}
+			words.clear();
 			continue;
 		}
-		words = SplitIntoWords(GetStringFromWString(line));
-		if (count_comms == 4 && flag_type_column) {
+		for (auto word : SplitIntoWords(line)) {
+			words.push_back(GetStringFromWString(word));
+		}
+		if (words.empty()) {
+			continue;
+		}
+		if (count_comms == 4 && flag_type_column ) {
 			auto types = FoundTypeForCol(words);
 			for (int i = 0; i < types.size(); ++i) {
 				table_[i].type = types[i];
@@ -196,6 +201,7 @@ void Converter::ParseFromUtf16(const std::string& path) {
 			table_[i].rows.push_back(val);
 			++i;
 		}
+		words.clear();
 	}
 }
 
@@ -232,6 +238,36 @@ std::vector<std::string> Converter::SplitIntoWords(const std::string& text) {
 	return words;
 }	
 
+
+std::vector<std::wstring> Converter::SplitIntoWords(const std::wstring& text) {
+	std::vector<std::wstring> words;
+	std::wstring word;
+	bool flag_text = false;
+	bool tab_flag = false;
+	for (const wchar_t c : text) {
+		if (c == L'\t') tab_flag = true;
+		if ((c == L'\t' || c == L'\r') && !flag_text && (c == L' ' || tab_flag )) {
+			if (!word.empty()) {
+				words.push_back(word);
+				word.clear();
+			}
+			continue;
+		}
+		else {
+			if (c == L'\"') {
+				if (!flag_text) flag_text = true;
+				else flag_text = false;
+				continue;
+			}
+			if (c == L' ' && word.empty()) continue;
+			word += c;
+		}
+	}
+	if (!word.empty()) {
+		words.push_back(word);
+	}
+	return words;
+}
 
 Converter::Type Converter::FoundType(std::string_view str) {
 	auto it1 = std::find_if(str.begin(), str.end(), [](const char c) {
@@ -358,16 +394,12 @@ std::string GetStringFromWString(const std::wstring& wstr)
 {
 	/*std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	return converter.to_bytes(wstr.c_str());*/
-	 /*if( wstr.empty() ) return std::string();
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
-    std::string strTo( size_needed, 0 );
-    WideCharToMultiByte                  (CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
-    return strTo;*/
-	/*if (wstr.empty()) return std::string();
+	setlocale(LC_ALL, "Russian");
+	if (wstr.empty()) return std::string();
 	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
 	std::string strTo(size_needed, 0);
 	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
-	return strTo;*/
+	return strTo;
 	/*std::string strTo;
 	char* szTo = new char[wstr.length() + 1];
 	szTo[wstr.size()] = '\0';
@@ -375,9 +407,9 @@ std::string GetStringFromWString(const std::wstring& wstr)
 	strTo = szTo;
 	delete[] szTo;
 	return strTo;*/
-	std::string str(wstr.length(), 0);
+	/*std::string str(wstr.length(), 0);
 	std::transform(wstr.begin(), wstr.end(), str.begin(), [](wchar_t c) {
 		return (char)c;
 		});
-	return str;
+	return str;*/
 }

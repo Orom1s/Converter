@@ -16,7 +16,6 @@
 #pragma warning (disable : 26495)
 
 
-
 /// Функция Callback для получения данных с базы
 using CallBackFunction = int (*)(void*, int, char**, char**);
 
@@ -83,6 +82,8 @@ private:
 	void ParseFromUtf16(const std::string& path);
 	/// Разбить полученную строку на вектор со словами
 	std::vector<std::string> SplitIntoWords(const std::string& text);
+
+	std::vector<std::wstring> SplitIntoWords(const std::wstring& text);
 
 	Type FoundType(std::string_view str);
 
