@@ -122,15 +122,12 @@ void Converter::ParseFromUtf8(const std::string& path) {
 	bool flag_type_column = true;
 	int count_comms = 0;
 	while (getline(file, line)) {
-		if (line.find(47) != std::string::npos || line.find('*') != std::string::npos) {
-			++count_comms;
-			continue;
-		}
-		/*if (line.c_str()[0] == 47 || line.c_str()[0] == '*') {
+		
+		if (line.c_str()[0] == 47 || line.c_str()[0] == '*') {
 			++count_comms;
 			continue;
 			
-		}*/
+		}
 		if (count_comms <= 2) continue;
 		if (count_comms == 3) {
 			words = SplitIntoWords(line);
