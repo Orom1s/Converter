@@ -9,11 +9,9 @@
 #include <variant>
 #include <string_view>
 #include <iostream>
-#include <ranges>
 #include <algorithm>
 #include <cctype>
 #include <Windows.h>
-//#include "Sys/old_string.h"
 
 #pragma warning (disable : 26495)
 
@@ -49,6 +47,13 @@ private:
 		std::vector<std::string> rows;
 	};
 
+	enum Coding {
+		tc_unknown,
+		tc_ansi,
+		tc_unicode,
+	};
+
+
 	std::vector<ColumnSQL> table_;
 
 ///Работа с базой данных
@@ -73,7 +78,9 @@ private:
 
 /// Работа с текстом
 private:
-	void Parse(std::wifstream file);
+	void Parse(const std::string& path);
+	void ParseFromUtf8(const std::string& path);
+	void ParseFromUtf16(const std::string& path);
 	/// Разбить полученную строку на вектор со словами
 	std::vector<std::string> SplitIntoWords(const std::string& text);
 
@@ -82,6 +89,8 @@ private:
 	std::vector<std::string> FoundTypeForCol(const std::vector<std::string>& row);
 
 	bool FoundDuplicate(std::vector<std::string>& cols);
+
+	Coding CheckCoding();
 };
 
 bool ichar_equals(char a, char b);
@@ -95,3 +104,4 @@ std::string ReadLine(std::istream& input);
 bool ForEachFilesInDir(std::string path_to_directory);
 
 std::string GetStringFromWString(const std::wstring& wstr);
+

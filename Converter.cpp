@@ -7,7 +7,7 @@ using namespace std::string_literals;
 
 Converter::Converter(const std::string& path) : m_dbPath(path) {
 	if (std::filesystem::exists(std::filesystem::path{ m_dbPath })) {
-		Parse(std::wifstream{ m_dbPath });
+		Parse(m_dbPath);
 	}	
 	if (!table_.empty()) {
 		CreateDBfile();
@@ -103,15 +103,26 @@ bool Converter::FillDBFile()
 	return true;
 }
 
-void Converter::Parse(std::wifstream file)
-{
-	setlocale(LC_ALL, "");
+void Converter::Parse(const std::string& path) {
+	auto type = CheckCoding();
+	switch (type) {
+	case tc_ansi:
+		ParseFromUtf8(path);
+		break;
+	case tc_unicode:
+		ParseFromUtf16(path);
+		break;
+	}
+}
+
+void Converter::ParseFromUtf8(const std::string& path) {
+	std::ifstream file{ path };
 	std::vector<std::string> words;
-	std::wstring line;
+	std::string line;
 	bool flag_type_column = true;
 	int count_comms = 0;
 	while (getline(file, line)) {
-		if (line.find(47) != std::wstring::npos || line.find(L'*') != std::wstring::npos) {
+		if (line.find(47) != std::string::npos || line.find('*') != std::string::npos) {
 			++count_comms;
 			continue;
 		}
@@ -119,6 +130,50 @@ void Converter::Parse(std::wifstream file)
 			++count_comms;
 			continue;
 			
+		}*/
+		if (count_comms <= 2) continue;
+		if (count_comms == 3) {
+			words = SplitIntoWords(line);
+			table_.resize(words.size());
+			FoundDuplicate(words);
+			for (int i = 0; i < words.size(); ++i) {
+				table_[i].name = words[i];
+			}
+			continue;
+		}
+		words = SplitIntoWords(line);
+		if (count_comms == 4 && flag_type_column) {
+			auto types = FoundTypeForCol(words);
+			for (int i = 0; i < types.size(); ++i) {
+				table_[i].type = types[i];
+			}
+			flag_type_column = false;
+		}
+		int  i = 0;
+		for (auto val : words) {
+
+			table_[i].rows.push_back(val);
+			++i;
+		}
+	}
+}
+
+void Converter::ParseFromUtf16(const std::string& path) {
+	std::wifstream file{ path, std::ios::binary };
+	setlocale(LC_ALL, "Russian");
+	std::vector<std::string> words;
+	std::wstring line;
+	bool flag_type_column = true;
+	int count_comms = 0;
+	while (getline(file, line)) {
+		if (line.find(L'\\') != std::wstring::npos || line.find(L'*') != std::wstring::npos) {
+			++count_comms;
+			continue;
+		}
+		/*if (line.c_str()[0] == 47 || line.c_str()[0] == '*') {
+			++count_comms;
+			continue;
+
 		}*/
 		if (count_comms <= 2) continue;
 		if (count_comms == 3) {
@@ -246,6 +301,24 @@ bool Converter::FoundDuplicate(std::vector<std::string>& cols)
 	return true;
 }
 
+Converter::Coding Converter::CheckCoding()
+{
+	std::ifstream is{ m_dbPath , std::ios::in | std::ios::binary };
+	char const c0 = is.get();
+	if (c0 != '\xFF') {
+		is.putback(c0);
+		return tc_ansi;
+	}
+	/* Read the second byte. */
+	char const c1 = is.get();
+	if (c1 != '\xFE') {
+		is.putback(c1);
+		is.putback(c0);
+		return tc_ansi;
+	}
+	return tc_unicode;
+}
+
 bool ichar_equals(char a, char b)
 {
 	return std::tolower(static_cast<unsigned char>(a)) ==
@@ -254,7 +327,7 @@ bool ichar_equals(char a, char b)
 
 bool iequals(std::string_view lhs, std::string_view rhs)
 {
-	return std::ranges::equal(lhs, rhs, ichar_equals);
+	return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), ichar_equals);
 }
 
 
@@ -288,9 +361,26 @@ std::string GetStringFromWString(const std::wstring& wstr)
 {
 	/*std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	return converter.to_bytes(wstr.c_str());*/
-	std::string Result;
-	int sz = WideCharToMultiByte(CP_ACP, 0, &wstr[0], (int)wstr.size(), 0, 0, 0, 0);
-	Result = std::string(sz, 0);
-	WideCharToMultiByte(CP_ACP, 0, &wstr[0], (int)wstr.size(), &Result[0], sz, 0, 0);
-	return Result;
+	 /*if( wstr.empty() ) return std::string();
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+    std::string strTo( size_needed, 0 );
+    WideCharToMultiByte                  (CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+    return strTo;*/
+	/*if (wstr.empty()) return std::string();
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+	std::string strTo(size_needed, 0);
+	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+	return strTo;*/
+	/*std::string strTo;
+	char* szTo = new char[wstr.length() + 1];
+	szTo[wstr.size()] = '\0';
+	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, szTo, (int)wstr.length(), NULL, NULL);
+	strTo = szTo;
+	delete[] szTo;
+	return strTo;*/
+	std::string str(wstr.length(), 0);
+	std::transform(wstr.begin(), wstr.end(), str.begin(), [](wchar_t c) {
+		return (char)c;
+		});
+	return str;
 }
