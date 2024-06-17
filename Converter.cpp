@@ -86,16 +86,6 @@ bool Converter::FillDBFile()
 			}
 			query.clear();
 		}
-
-		/*rc = sqlite3_exec(m_connection, query.c_str(), 0, 0, &messageError);
-		if (rc != SQLITE_OK) {
-			std::cerr << messageError << "\n";
-			sqlite3_free(messageError);
-			Close();
-			return false;
-		}*/
-
-
 	}
 	else {
 		std::cerr << "fail_open";
