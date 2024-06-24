@@ -27,7 +27,7 @@
 
 #import "kAPI2D5COM.tlb"    no_namespace named_guids
 #import "kAPI3D5COM.tlb"    no_namespace named_guids
-#import "kAPI7.tlb" rename( "KompasAppl", "ksAPI7" ) named_guids  /*no_namespace*/
+#import "kAPI7.tlb" rename( "ksapi", "ksAPI7" ) named_guids  /*no_namespace*/
 
 
 

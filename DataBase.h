@@ -38,3 +38,17 @@ private:
 	bool Close();
 };
 
+/// Конвертировать строку из std::string в std::wstring
+std::wstring GetWStringFromString(const std::string& str);
+/// Конвертировать строку из std::wstring в std::string
+std::string GetStringFromWString(const std::wstring& wstr);
+
+/// Возвращает полное имя файла
+bool GetFullName(const std::wstring& inName, std::wstring& outName);
+
+/// Загрузить строку из ресурса
+std::wstring LoadStr(int id);
+/// Выдача библиотекой сообщения из ресурсов
+int LibMessage(int strId, int flags);
+/// Выдача сообщения библиотекой
+int LibMessage(const std::wstring& str, int flags);
