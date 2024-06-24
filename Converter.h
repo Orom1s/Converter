@@ -16,9 +16,6 @@
 #pragma warning (disable : 26495)
 
 
-/// Функция Callback для получения данных с базы
-using CallBackFunction = int (*)(void*, int, char**, char**);
-
 class Converter {
 public:
 
@@ -54,14 +51,6 @@ private:
 
 
 	std::vector<ColumnSQL> table_;
-
-///Работа с базой данных
-public:
-	
-	/// Получить соединение с базой данных
-	static Converter* GetDBConnection();
-	/// Получить путь к базе данных
-	std::string GetDBPath();
 
 private:
 

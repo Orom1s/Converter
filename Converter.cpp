@@ -1,4 +1,5 @@
-﻿#include "Converter.h"
+﻿#include "stdafx.h"
+#include "Converter.h"
 
 #include <locale>
 #include<codecvt>
@@ -196,16 +197,6 @@ void Converter::ParseFromUtf16(const std::string& path) {
 }
 
 
-
-
-Converter* Converter::GetDBConnection() {
-	return nullptr;
-}
-
-std::string Converter::GetDBPath()
-{
-	return m_dbPath;
-}
 
 std::vector<std::string> Converter::SplitIntoWords(const std::string& text) {
 	std::vector<std::string> words;
