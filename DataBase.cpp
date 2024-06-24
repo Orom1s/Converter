@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "DataBase.h"
-
+#include "Resource.h"
 
 #include <filesystem>
 #include <memory>
