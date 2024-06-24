@@ -11,7 +11,8 @@ int GetAllGOSTCallback(void* result, int count, char** rowData, char**ColNames) 
             std::wstring col_name = GetWStringFromString((std::string)ColNames[i]);
             vars.insert(std::make_pair((LPTSTR)(LPCTSTR)col_name.c_str(), std::stod(rowData[i])));
         }
-        resultdata->push_back(std::make_pair((LPTSTR)(LPCTSTR)ColNames[0], vars));
+        std::wstring num = GetWStringFromString((std::string)rowData[1]);
+        resultdata->push_back(std::make_pair((LPTSTR)(LPCTSTR)num.c_str(), vars));
     }
     return 0;
 }
