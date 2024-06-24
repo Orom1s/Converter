@@ -1,8 +1,6 @@
 ﻿#include "stdafx.h"
 #include "Converter.h"
 
-#include <locale>
-#include<codecvt>
 
 using namespace std::string_literals;
 
@@ -29,11 +27,6 @@ bool Converter::CreateDBfile() {
 	std::ofstream{ dbfile };
 	entry.assign(entry / dbfile);
 	if (entry.exists()) {
-		/*if (!Create()) {
-			std::cerr << "fail_create \n";
-			Close();
-			
-		}*/
 		m_dbPath = entry.path().string();
 		return true;
 	}
@@ -115,7 +108,7 @@ void Converter::ParseFromUtf8(const std::string& path) {
 	bool flag_type_column = true;
 	int count_comms = 0;
 	while (getline(file, line)) {
-		if (line.c_str()[0] == 47 || line.c_str()[0] == '*') {
+		if (line.find('\\') != std::string::npos || line.find('*') != std::string::npos) {
 			++count_comms;
 			continue;
 			
@@ -371,26 +364,26 @@ bool ForEachFilesInDir(std::string path_to_directory) {
 	return true;
 }
 
+
+//------------------------------------------------------------------------------
+/**
+  Конвертировать строку из std::string в std::wstring
+*/
+//---
+std::wstring GetWStringFromString(const std::string& str)
+{
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+	return myconv.from_bytes(str);
+}
+
+
+//------------------------------------------------------------------------------
+/**
+  Конвертировать строку из std::wstring в std::string
+*/
+//---
 std::string GetStringFromWString(const std::wstring& wstr)
 {
-	/*std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-	return converter.to_bytes(wstr.c_str());*/
-	setlocale(LC_ALL, "Russian");
-	if (wstr.empty()) return std::string();
-	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
-	std::string strTo(size_needed, 0);
-	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
-	return strTo;
-	/*std::string strTo;
-	char* szTo = new char[wstr.length() + 1];
-	szTo[wstr.size()] = '\0';
-	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, szTo, (int)wstr.length(), NULL, NULL);
-	strTo = szTo;
-	delete[] szTo;
-	return strTo;*/
-	/*std::string str(wstr.length(), 0);
-	std::transform(wstr.begin(), wstr.end(), str.begin(), [](wchar_t c) {
-		return (char)c;
-		});
-	return str;*/
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	return converter.to_bytes(wstr.c_str());
 }

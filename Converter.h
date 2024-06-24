@@ -2,16 +2,6 @@
 
 #include "sqlite/sqlite3.h"
 
-#include <filesystem>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <variant>
-#include <string_view>
-#include <iostream>
-#include <algorithm>
-#include <cctype>
-#include <Windows.h>
 
 #pragma warning (disable : 26495)
 
@@ -92,6 +82,8 @@ std::string quotesql(const std::string& s);
 std::string ReadLine(std::istream& input);
 
 bool ForEachFilesInDir(std::string path_to_directory);
+
+std::wstring GetWStringFromString(const std::string& str);
 
 std::string GetStringFromWString(const std::wstring& wstr);
 

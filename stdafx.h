@@ -10,27 +10,33 @@
 
 #include <COMUTIL.H>
 #include <comdef.h>
-
 #pragma warning( disable : 4192 )
 #pragma warning( disable : 4278 )
 #pragma warning( disable : 4267)
 
-#import "ksConstants.tlb"   no_namespace named_guids
-#import "ksConstants3D.tlb" no_namespace named_guids
 
 #include <libtool.h>
 #include <libdb.h>
 
-#include <map>
+#include <stdexcept>
+#include <cmath>
+#include <string>
+#include <sstream>
+#include <filesystem>
+#include <fstream>
 #include <string>
 #include <vector>
+#include <variant>
+#include <string_view>
+#include <iostream>
+#include <algorithm>
+#include <cctype>
+#include <Windows.h>
+#include <map>
+#include <memory>
+#include <codecvt>
 
-#import "kAPI2D5COM.tlb"    no_namespace named_guids
-#import "kAPI3D5COM.tlb"    no_namespace named_guids
-#import "kAPI7.tlb" rename( "ksapi", "ksAPI7" ) named_guids  /*no_namespace*/
-
-
-
+#include "sqlite/sqlite3.h"
 
 #pragma warning( once : 4192 )
 #pragma warning( once : 4278 ) 
