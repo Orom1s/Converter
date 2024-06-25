@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sqlite/sqlite3.h"
 
 struct sqlite3;
 
@@ -39,9 +40,3 @@ private:
 
 /// Возвращает полное имя файла
 bool GetFullName(const std::wstring& inName, std::wstring& outName);
-
-std::string quotesql(const std::string& s);
-
-std::wstring GetWStringFromString(const std::string& str);
-
-std::string GetStringFromWString(const std::wstring& wstr);

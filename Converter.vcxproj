@@ -144,7 +144,9 @@
     <ClCompile Include="Converter.cpp" />
     <ClCompile Include="DataBase.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="sqlite\sqlite3.c" />
+    <ClCompile Include="sqlite\sqlite3.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Test.cpp" />
   </ItemGroup>

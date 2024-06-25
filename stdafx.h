@@ -36,7 +36,6 @@
 #include <memory>
 #include <codecvt>
 
-#include "sqlite/sqlite3.h"
 
 #pragma warning( once : 4192 )
 #pragma warning( once : 4278 ) 

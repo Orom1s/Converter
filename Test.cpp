@@ -2,6 +2,7 @@
 #include <afxdllx.h>
 #include "Test.h"
 #include "DataBase.h"
+#include "common.h"
 
 int GetAllGOSTCallback(void* result, int count, char** rowData, char**ColNames) {
     SpecBladingProfileParams* resultdata = reinterpret_cast<SpecBladingProfileParams*>(result);

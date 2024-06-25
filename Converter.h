@@ -73,17 +73,5 @@ private:
 	Coding CheckCoding();
 };
 
-bool ichar_equals(char a, char b);
-
-bool iequals(std::string_view lhs, std::string_view rhs);
-
-std::string quotesql(const std::string& s);
-
-std::string ReadLine(std::istream& input);
-
 bool ForEachFilesInDir(std::string path_to_directory);
-
-std::wstring GetWStringFromString(const std::string& str);
-
-std::string GetStringFromWString(const std::wstring& wstr);
 

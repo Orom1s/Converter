@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "DataBase.h"
-
-
+#include "common.h"
 
 
 //------------------------------------------------------------------------------
@@ -110,32 +109,4 @@ bool GetFullName(const std::wstring& inName, std::wstring& outName)
     
 
     return res;
-}
-
-
-std::string quotesql(const std::string& s) {
-    return std::string("\"") + s + std::string("\"");
-}
-
-//------------------------------------------------------------------------------
-/**
-  Конвертировать строку из std::string в std::wstring
-*/
-//---
-std::wstring GetWStringFromString(const std::string& str)
-{
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
-    return myconv.from_bytes(str);
-}
-
-
-//------------------------------------------------------------------------------
-/**
-  Конвертировать строку из std::wstring в std::string
-*/
-//---
-std::string GetStringFromWString(const std::wstring& wstr)
-{
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    return converter.to_bytes(wstr.c_str());
 }
