@@ -156,29 +156,6 @@ void Converter::Parse(const std::string& path, Coding type) {
 }
 
 
-
-std::vector<std::string> Converter::SplitIntoWords(const std::string& text) {
-	std::vector<std::string> words;
-	std::string word;
-	for (const char c : text) {
-		if (c == ' ' || c == '\t') {
-			if (!word.empty()) {
-				words.push_back(word);
-				word.clear();
-			}
-			continue;
-		}
-		else {
-			word += c;
-		}
-	}
-	if (!word.empty()) {
-		words.push_back(word);
-	}
-	return words;
-}	
-
-
 std::vector<std::wstring> Converter::SplitIntoWords(const std::wstring& text) {
 	std::vector<std::wstring> words;
 	std::wstring word;
@@ -187,7 +164,9 @@ std::vector<std::wstring> Converter::SplitIntoWords(const std::wstring& text) {
 	for (const wchar_t c : text) {
 		if (c == L'\t') tab_flag = true;
 		if (word.empty() && c == L'\r') break;
-		if ((c == L'\t' || c == L'\r') && !flag_text && (c == L' ' || tab_flag )) {
+		if (c == L'\t' || c == L'\r' || c == L' ') {
+			if ((c == L' ' && tab_flag) && !flag_text) goto input;
+			if (flag_text) goto input;
 			if (!word.empty()) {
 				words.push_back(word);
 				word.clear();
@@ -195,6 +174,7 @@ std::vector<std::wstring> Converter::SplitIntoWords(const std::wstring& text) {
 			continue;
 		}
 		else {
+			input:
 			if (c == L'\"') {
 				if (!flag_text) flag_text = true;
 				else flag_text = false;
@@ -212,7 +192,7 @@ std::vector<std::wstring> Converter::SplitIntoWords(const std::wstring& text) {
 
 Converter::Type Converter::FoundType(std::string_view str) {
 	auto it1 = std::find_if(str.begin(), str.end(), [](const char c) {
-		return (c == '"');
+		return (c == ' ');
 		});
 	if (it1 != str.end()) {
 		return Type::TEXT;
