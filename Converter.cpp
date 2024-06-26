@@ -92,51 +92,71 @@ bool Converter::FillDBFile()
 void Converter::Parse(const std::string& path) {
 	auto type = CheckCoding();
 	switch (type) {
-	case tc_ansi:
+	case tc_ansi: {
+		/*std::ifstream file{ path };
+		std::string line;
+		Parse(file, line);*/
 		ParseFromUtf8(path);
 		break;
-	case tc_unicode:
+	}
+	case tc_unicode: {
+		/*std::wifstream file{ path, std::ios::in || std::ios::binary };
+		file.imbue(std::locale(file.getloc(),
+			new std::codecvt_utf16<wchar_t, 0x10ffff, std::codecvt_mode::little_endian>));
+		std::wstring line;
+		Parse(file, line);*/
 		ParseFromUtf16(path);
 		break;
+	}
 	}
 }
 
 void Converter::ParseFromUtf8(const std::string& path) {
 	std::ifstream file{ path };
-	std::vector<std::string> words;
 	std::string line;
+	std::vector<std::string> words;
 	bool flag_type_column = true;
-	int count_comms = 0;
+	bool com_closed = true;
+	std::string buffer;
 	while (getline(file, line)) {
-		if (line.find('\\') != std::string::npos || line.find('*') != std::string::npos) {
-			++count_comms;
-			continue;
-			
-		}
-		if (count_comms <= 2) continue;
-		if (count_comms == 3) {
-			words = SplitIntoWords(line);
-			table_.resize(words.size());
-			FoundDuplicate(words);
-			for (int i = 0; i < words.size(); ++i) {
-				table_[i].name = words[i];
+		auto it = line.find('/');
+		auto it2 = line.find('*');
+		if (it != std::string::npos && it2 != std::string::npos) {
+			if (it < it2) {
+				com_closed = false;
+				continue;
 			}
+			else {
+				com_closed = true;
+				continue;
+			}
+		}
+		if (!com_closed) {
+			buffer = line;
 			continue;
 		}
 		words = SplitIntoWords(line);
-		if (count_comms == 4 && flag_type_column) {
-			auto types = FoundTypeForCol(words);
-			for (int i = 0; i < types.size(); ++i) {
-				table_[i].type = types[i];
+		if (!words.empty() ) {
+			if (flag_type_column) {
+				auto cols = SplitIntoWords(buffer);
+				table_.resize(cols.size());
+				FoundDuplicate(cols);
+				for (int i = 0; i < cols.size(); ++i) {
+					table_[i].name = cols[i];
+				}
+				auto types = FoundTypeForCol(words);
+				for (int i = 0; i < types.size(); ++i) {
+					table_[i].type = types[i];
+				}
+				flag_type_column = false;
 			}
-			flag_type_column = false;
-		}
-		int  i = 0;
-		for (auto val : words) {
+			int  i = 0;
+			for (auto val : words) {
 
-			table_[i].rows.push_back(val);
-			++i;
-		}
+				table_[i].rows.push_back(val);
+				++i;
+			}
+		} else continue;
 	}
 }
 
@@ -147,44 +167,53 @@ void Converter::ParseFromUtf16(const std::string& path) {
 	std::vector<std::string> words;
 	std::wstring line;
 	bool flag_type_column = true;
-	int count_comms = 0;
+	bool com_closed = true;
+	std::wstring buffer;
 	while (getline(file, line)) {
-		if (line.find(L'\\') != std::wstring::npos || line.find(L'*') != std::wstring::npos) {
-			++count_comms;
-			continue;
+		auto it = line.find(L'/');
+		auto it2 = line.find(L'*');
+		if (it != std::wstring::npos && it2 != std::wstring::npos) {
+			if (it < it2) {
+				com_closed = false;
+				continue;
+			}
+			else {
+				com_closed = true;
+				continue;
+			}
 		}
-		if (count_comms <= 2) continue;
-		if (count_comms == 3) {
-			for (auto word : SplitIntoWords(line)) {
-				words.push_back(GetStringFromWString(word));
-			}
-			table_.resize(words.size());
-			FoundDuplicate(words);
-			for (int i = 0; i < words.size(); ++i) {
-				table_[i].name = words[i];
-			}
-			words.clear();
+		if (!com_closed) {
+			buffer = line;
 			continue;
 		}
 		for (auto word : SplitIntoWords(line)) {
 			words.push_back(GetStringFromWString(word));
 		}
-		if (words.empty()) {
-			continue;
-		}
-		if (count_comms == 4 && flag_type_column ) {
-			auto types = FoundTypeForCol(words);
-			for (int i = 0; i < types.size(); ++i) {
-				table_[i].type = types[i];
+		if (!words.empty()) {
+			if (flag_type_column) {
+				std::vector<std::string> cols;
+				for (auto word : SplitIntoWords(buffer)) {
+					cols.push_back(GetStringFromWString(word));
+				}
+				table_.resize(cols.size());
+				FoundDuplicate(cols);
+				for (int i = 0; i < cols.size(); ++i) {
+					table_[i].name = cols[i];
+				}
+				auto types = FoundTypeForCol(words);
+				for (int i = 0; i < types.size(); ++i) {
+					table_[i].type = types[i];
+				}
+				flag_type_column = false;
 			}
-			flag_type_column = false;
-		}
-		int  i = 0;
-		for (auto val : words) {
+			int  i = 0;
+			for (auto val : words) {
 
-			table_[i].rows.push_back(val);
-			++i;
+				table_[i].rows.push_back(val);
+				++i;
+			}
 		}
+		
 		words.clear();
 	}
 }
@@ -220,6 +249,7 @@ std::vector<std::wstring> Converter::SplitIntoWords(const std::wstring& text) {
 	bool tab_flag = false;
 	for (const wchar_t c : text) {
 		if (c == L'\t') tab_flag = true;
+		if (word.empty() && c == L'\r') break;
 		if ((c == L'\t' || c == L'\r') && !flag_text && (c == L' ' || tab_flag )) {
 			if (!word.empty()) {
 				words.push_back(word);

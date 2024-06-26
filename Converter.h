@@ -59,6 +59,8 @@ private:
 	void Parse(const std::string& path);
 	void ParseFromUtf8(const std::string& path);
 	void ParseFromUtf16(const std::string& path);
+	/*template<class Input, class String>
+	void Parse(Input& ifile, String& line);*/
 	/// –азбить полученную строку на вектор со словами
 	std::vector<std::string> SplitIntoWords(const std::string& text);
 
@@ -75,3 +77,62 @@ private:
 
 bool ForEachFilesInDir(std::string path_to_directory);
 
+//template<class Input, class String>
+//inline void Converter::Parse(Input& file, String& str) {
+//	bool is_wstring = false;
+//	if (std::is_same<String, std::wstring>()) {
+//		is_wstring = true;
+//	}
+//	std::vector<std::string> words;
+//	bool flag_type_column = true;
+//	ComBlock comms;
+//	while (getline(file, str)) {
+//		std::string line;
+//		if (is_wstring) {
+//			line = GetStringFromWString(str);
+//		}
+//		else {
+//			line = str;
+//		}
+//		auto it = line.find('/');
+//		auto it2 = line.find('*');
+//		if (it != std::string::npos && it2 != std::string::npos) {
+//			if (it < it2) {
+//				comms.com_closed = false;
+//				continue;
+//			}
+//			else {
+//				comms.com_closed = true;
+//				++comms.count;
+//				continue;
+//			}
+//		}
+//		if (!comms.com_closed) {
+//			comms.buffer = line;
+//			continue;
+//		}
+//		words = SplitIntoWords(line);
+//		if (!words.empty()) {
+//			if (flag_type_column) {
+//				auto cols = SplitIntoWords(comms.buffer);
+//				table_.resize(cols.size());
+//				FoundDuplicate(cols);
+//				for (int i = 0; i < cols.size(); ++i) {
+//					table_[i].name = cols[i];
+//				}
+//				auto types = FoundTypeForCol(words);
+//				for (int i = 0; i < types.size(); ++i) {
+//					table_[i].type = types[i];
+//				}
+//				flag_type_column = false;
+//			}
+//			int  i = 0;
+//			for (auto val : words) {
+//
+//				table_[i].rows.push_back(val);
+//				++i;
+//			}
+//		}
+//		else continue;
+//	}
+//}
