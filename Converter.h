@@ -57,8 +57,7 @@ private:
 /// Работа с текстом
 private:
 	void Parse(const std::string& path);
-	void ParseFromUtf8(const std::string& path);
-	void ParseFromUtf16(const std::string& path);
+	void Parse(const std::string& path, Coding type);
 	/*template<class Input, class String>
 	void Parse(Input& ifile, String& line);*/
 	/// Разбить полученную строку на вектор со словами
@@ -75,7 +74,7 @@ private:
 	Coding CheckCoding();
 };
 
-bool ForEachFilesInDir(std::string path_to_directory);
+bool ForEachFilesInDir(std::filesystem::path path_to_directory);
 
 //template<class Input, class String>
 //inline void Converter::Parse(Input& file, String& str) {

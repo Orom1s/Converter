@@ -28,6 +28,7 @@ bool Converter::CreateDBfile() {
 	entry.assign(entry / dbfile);
 	if (entry.exists()) {
 		m_dbPath = entry.path().string();
+		std::cout << "Generate file " << m_dbPath << std::endl;
 		return true;
 	}
 	return false;
@@ -90,80 +91,16 @@ bool Converter::FillDBFile()
 }
 
 void Converter::Parse(const std::string& path) {
-	auto type = CheckCoding();
-	switch (type) {
-	case tc_ansi: {
-		/*std::ifstream file{ path };
-		std::string line;
-		Parse(file, line);*/
-		ParseFromUtf8(path);
-		break;
-	}
-	case tc_unicode: {
-		/*std::wifstream file{ path, std::ios::in || std::ios::binary };
-		file.imbue(std::locale(file.getloc(),
-			new std::codecvt_utf16<wchar_t, 0x10ffff, std::codecvt_mode::little_endian>));
-		std::wstring line;
-		Parse(file, line);*/
-		ParseFromUtf16(path);
-		break;
-	}
-	}
+	Parse(path, CheckCoding());
 }
 
-void Converter::ParseFromUtf8(const std::string& path) {
-	std::ifstream file{ path };
-	std::string line;
-	std::vector<std::string> words;
-	bool flag_type_column = true;
-	bool com_closed = true;
-	std::string buffer;
-	while (getline(file, line)) {
-		auto it = line.find('/');
-		auto it2 = line.find('*');
-		if (it != std::string::npos && it2 != std::string::npos) {
-			if (it < it2) {
-				com_closed = false;
-				continue;
-			}
-			else {
-				com_closed = true;
-				continue;
-			}
-		}
-		if (!com_closed) {
-			buffer = line;
-			continue;
-		}
-		words = SplitIntoWords(line);
-		if (!words.empty() ) {
-			if (flag_type_column) {
-				auto cols = SplitIntoWords(buffer);
-				table_.resize(cols.size());
-				FoundDuplicate(cols);
-				for (int i = 0; i < cols.size(); ++i) {
-					table_[i].name = cols[i];
-				}
-				auto types = FoundTypeForCol(words);
-				for (int i = 0; i < types.size(); ++i) {
-					table_[i].type = types[i];
-				}
-				flag_type_column = false;
-			}
-			int  i = 0;
-			for (auto val : words) {
-
-				table_[i].rows.push_back(val);
-				++i;
-			}
-		} else continue;
-	}
-}
-
-void Converter::ParseFromUtf16(const std::string& path) {
+void Converter::Parse(const std::string& path, Coding type) {
 	std::wifstream file{ path, std::ios::in || std::ios::binary };
-	file.imbue(std::locale(file.getloc(),
-		new std::codecvt_utf16<wchar_t, 0x10ffff, std::codecvt_mode::little_endian>));
+	if ( type == tc_ansi )
+    file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t>));
+	else
+		file.imbue(std::locale(file.getloc(), new std::codecvt_utf16<wchar_t, 0x10ffff, std::codecvt_mode::little_endian>));
+
 	std::vector<std::string> words;
 	std::wstring line;
 	bool flag_type_column = true;
@@ -357,14 +294,14 @@ Converter::Coding Converter::CheckCoding()
 }
 
 
-bool ForEachFilesInDir(std::string path_to_directory) {
-	std::filesystem::path input_path(path_to_directory);
+bool ForEachFilesInDir(std::filesystem::path input_path) {
+
 	for (auto& dir_entry : std::filesystem::recursive_directory_iterator(input_path)) {
 		if (dir_entry.is_regular_file()) {
-			auto name_file = dir_entry.path().filename().string();
-			auto it = name_file.find_last_of('.');
-			std::string extension = (std::string)(name_file.substr(it));
+			auto name_file = dir_entry.path().filename();
+			auto extension = name_file.extension();
 			if (extension == ".loa") {
+				std::cout << "Find file " << dir_entry.path() << std::endl;
 				Converter(dir_entry.path().string());
 			}
 		}

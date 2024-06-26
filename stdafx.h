@@ -14,10 +14,6 @@
 #pragma warning( disable : 4278 )
 #pragma warning( disable : 4267)
 
-
-#include <libtool.h>
-#include <libdb.h>
-
 #include <stdexcept>
 #include <cmath>
 #include <string>
