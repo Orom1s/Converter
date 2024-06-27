@@ -6,12 +6,12 @@
 #pragma warning (disable : 26495)
 
 
-class Converter {
+class loatodb {
 public:
 
-	Converter() = default;
+	loatodb() = default;
 
-	Converter(const std::string& path);
+	loatodb(const std::string& path);
 
 
 /// Данные
@@ -77,7 +77,7 @@ private:
 bool ForEachFilesInDir(std::filesystem::path path_to_directory);
 
 //template<class Input, class String>
-//inline void Converter::Parse(Input& file, String& str) {
+//inline void loatodb::Parse(Input& file, String& str) {
 //	bool is_wstring = false;
 //	if (std::is_same<String, std::wstring>()) {
 //		is_wstring = true;

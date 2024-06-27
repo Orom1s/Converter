@@ -22,7 +22,7 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{347b2b71-c02e-4f01-9d33-177c18b77506}</ProjectGuid>
-    <RootNamespace>Converter</RootNamespace>
+    <RootNamespace>loatodb</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -143,7 +143,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp" />
-    <ClCompile Include="Converter.cpp" />
+    <ClCompile Include="loatodb.cpp" />
     <ClCompile Include="DataBase.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sqlite\sqlite3.c">
@@ -154,7 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
-    <ClInclude Include="Converter.h" />
+    <ClInclude Include="loatodb.h" />
     <ClInclude Include="DataBase.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Test.h" />

@@ -1,10 +1,10 @@
 ﻿#include "stdafx.h"
-#include "Converter.h"
+#include "loatodb.h"
 #include "common.h"
 
 using namespace std::string_literals;
 
-Converter::Converter(const std::string& path) : m_dbPath(path) {
+loatodb::loatodb(const std::string& path) : m_dbPath(path) {
 	if (std::filesystem::exists(std::filesystem::path{ m_dbPath })) {
 		Parse(m_dbPath);
 	}	
@@ -15,7 +15,7 @@ Converter::Converter(const std::string& path) : m_dbPath(path) {
 }
 
 
-bool Converter::CreateDBfile() {
+bool loatodb::CreateDBfile() {
 	auto file = std::filesystem::path(m_dbPath).filename();
 	std::string name_file = file.string();
 	auto it = name_file.find_last_of('.');
@@ -34,21 +34,21 @@ bool Converter::CreateDBfile() {
 	return false;
 }
 
-bool Converter::Create() {
+bool loatodb::Create() {
 	return sqlite3_open_v2(m_dbPath.c_str(), &m_connection, SQLITE_OPEN_CREATE, NULL) == SQLITE_OK;
 }
 
-bool Converter::Open()
+bool loatodb::Open()
 {
 	return sqlite3_open_v2(m_dbPath.c_str(), &m_connection, SQLITE_OPEN_READWRITE, NULL) == SQLITE_OK;
 }
 
-bool Converter::Close()
+bool loatodb::Close()
 {
 	return sqlite3_close(m_connection) == SQLITE_OK;
 }
 
-bool Converter::FillDBFile()
+bool loatodb::FillDBFile()
 {
 	char* messageError;
 	if(Open()) {
@@ -90,11 +90,11 @@ bool Converter::FillDBFile()
 	return true;
 }
 
-void Converter::Parse(const std::string& path) {
+void loatodb::Parse(const std::string& path) {
 	Parse(path, CheckCoding());
 }
 
-void Converter::Parse(const std::string& path, Coding type) {
+void loatodb::Parse(const std::string& path, Coding type) {
 	std::wifstream file{ path, std::ios::in || std::ios::binary };
 	if ( type == tc_ansi )
     file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t>));
@@ -156,7 +156,7 @@ void Converter::Parse(const std::string& path, Coding type) {
 }
 
 
-std::vector<std::wstring> Converter::SplitIntoWords(const std::wstring& text) {
+std::vector<std::wstring> loatodb::SplitIntoWords(const std::wstring& text) {
 	std::vector<std::wstring> words;
 	std::wstring word;
 	bool flag_text = false;
@@ -190,7 +190,7 @@ std::vector<std::wstring> Converter::SplitIntoWords(const std::wstring& text) {
 	return words;
 }
 
-Converter::Type Converter::FoundType(std::string_view str) {
+loatodb::Type loatodb::FoundType(std::string_view str) {
 	auto it1 = std::find_if(str.begin(), str.end(), [](const char c) {
 		return (c == ' ');
 		});
@@ -218,7 +218,7 @@ Converter::Type Converter::FoundType(std::string_view str) {
 	return Type::TEXT;
 }
 
-std::vector<std::string> Converter::FoundTypeForCol(const std::vector<std::string>& row) {
+std::vector<std::string> loatodb::FoundTypeForCol(const std::vector<std::string>& row) {
 	std::vector<std::string> type_for_col;
 	for (auto word : row) {
 		Type type = FoundType(word);
@@ -240,7 +240,7 @@ std::vector<std::string> Converter::FoundTypeForCol(const std::vector<std::strin
 	return  type_for_col;
 }
 
-bool Converter::FoundDuplicate(std::vector<std::string>& cols)
+bool loatodb::FoundDuplicate(std::vector<std::string>& cols)
 {
 	std::vector<std::string> non_dup(cols.size());
 	for (int i = 0; i < cols.size() - 1; ++i) {
@@ -255,7 +255,7 @@ bool Converter::FoundDuplicate(std::vector<std::string>& cols)
 	return true;
 }
 
-Converter::Coding Converter::CheckCoding()
+loatodb::Coding loatodb::CheckCoding()
 {
 	std::ifstream is{ m_dbPath , std::ios::in | std::ios::binary };
 	char const c0 = is.get();
@@ -282,7 +282,7 @@ bool ForEachFilesInDir(std::filesystem::path input_path) {
 			auto extension = name_file.extension();
 			if (extension == ".loa") {
 				std::cout << "Find file " << dir_entry.path() << std::endl;
-				Converter(dir_entry.path().string());
+				loatodb(dir_entry.path().string());
 			}
 		}
 	}
